@@ -1,11 +1,8 @@
 import streamlit as st
+from pages.one_overview import show_overview
 
-st.sidebar.title("Navigation")
-selection = st.sidebar.radio("Go to", ["Overview", "Model Performance"])
-
-if selection == "Overview":
-    from pages.one_overview import show_overview
+def main():
     show_overview()
-else:
-    from pages.two_model_performance import show_model_performance
-    show_model_performance()
+
+if __name__ == "__main__":
+    main()

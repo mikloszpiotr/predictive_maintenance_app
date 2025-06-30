@@ -1,20 +1,7 @@
-# Byte-compiled / cache
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual envs / env files
-.venv/
-env/
-.env
-
-# IDE configs
-.vscode/
-.idea/
-
-# Models output
-models/
-
-# Data folder: ignore everything except predictive_data.csv
+# Ignore everything in data/ except predictive_data.csv
 data/*
 !data/predictive_data.csv
+
+# Byte-compiled
+__pycache__/
+*.py[cod]

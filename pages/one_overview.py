@@ -4,33 +4,21 @@ from utils.utils import load_data
 
 def show_overview():
     st.title("Predictive Maintenance – Overview")
-
-    # Allow users to upload their own CSV if the default isn't available
-    uploaded_file = st.file_uploader(
-        label="Upload a CSV file with sensor readings (timestamp, sensor_1, ..., failure)",
-        type=['csv']
-    )
-    if uploaded_file is not None:
+    uploaded = st.file_uploader("Upload CSV (timestamp,sensor_1,...,failure)", type=['csv'])
+    if uploaded is not None:
         try:
-            data = pd.read_csv(uploaded_file, parse_dates=['timestamp'])
-            st.success("Loaded uploaded CSV.")
+            data = pd.read_csv(uploaded, parse_dates=['timestamp'])
+            st.success("Loaded uploaded data")
         except Exception as e:
-            st.error(f"Could not read uploaded file: {e}")
+            st.error(f"Error reading uploaded file: {e}")
             return
     else:
-        # Fallback to default data on disk
         try:
             data = load_data()
-            st.info("Loaded default dataset from data/predictive_data.csv")
+            st.info("Loaded default predictive_data.csv")
         except FileNotFoundError:
-            st.error(
-                "Default data file not found. "
-                "Please upload a CSV above or ensure data/predictive_data.csv exists."
-            )
+            st.error("Default data not found. Please upload a CSV above.")
             return
 
-    # Display the data preview
     st.markdown("### Sensor Data Preview")
     st.dataframe(data.head())
-
-    # Additional dashboard metrics could go here
