@@ -1,28 +1,36 @@
 import streamlit as st
-from utils.utils import load_data, load_model
+import pandas as pd
+from utils.utils import load_data
 
 def show_overview():
-    st.title("Predictive Maintenance Dashboard – Overview")
-    data = load_data()
-    model = load_model()
+    st.title("Predictive Maintenance – Overview")
 
-    # Failure prediction timeline
-    data["failure_prob"] = model.predict_proba(data[["sensor1", "sensor2", "sensor3"]])[:, 1]
-    st.subheader("Failure Prediction Timeline")
-    st.line_chart(data.set_index("timestamp")["failure_prob"])
+    # Allow users to upload their own CSV if the default isn't available
+    uploaded_file = st.file_uploader(
+        label="Upload a CSV file with sensor readings (timestamp, sensor_1, ..., failure)",
+        type=['csv']
+    )
+    if uploaded_file is not None:
+        try:
+            data = pd.read_csv(uploaded_file, parse_dates=['timestamp'])
+            st.success("Loaded uploaded CSV.")
+        except Exception as e:
+            st.error(f"Could not read uploaded file: {e}")
+            return
+    else:
+        # Fallback to default data on disk
+        try:
+            data = load_data()
+            st.info("Loaded default dataset from data/predictive_data.csv")
+        except FileNotFoundError:
+            st.error(
+                "Default data file not found. "
+                "Please upload a CSV above or ensure data/predictive_data.csv exists."
+            )
+            return
 
-    # KPI metrics
-    st.subheader("Key Maintenance KPIs")
-    total_hours = (data["timestamp"].iloc[-1] - data["timestamp"].iloc[0]).total_seconds() / 3600.0
-    total_failures = int(data["failure"].sum())
-    mtbf = total_hours / total_failures if total_failures > 0 else 0
-    unplanned_downtime = total_failures * 5
-    availability = ((total_hours - unplanned_downtime) / total_hours) * 100
-    maintenance_cost_total = total_failures * 1000
-    cost_per_unit = maintenance_cost_total / total_hours
+    # Display the data preview
+    st.markdown("### Sensor Data Preview")
+    st.dataframe(data.head())
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("MTBF (hrs)", f"{mtbf:.1f}")
-    col2.metric("Unplanned Downtime (hrs)", f"{unplanned_downtime}")
-    col3.metric("Availability (%)", f"{availability:.1f}%")
-    col4.metric("Cost per Unit", f"${cost_per_unit:.2f}")
+    # Additional dashboard metrics could go here
