@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+# Path to the default dataset
 DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'predictive_data.csv')
 
 def load_data():

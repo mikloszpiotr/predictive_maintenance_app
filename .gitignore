@@ -1,7 +1,21 @@
-# Ignore everything in data/ except predictive_data.csv
+# Ignore everything in data except the CSV
 data/*
 !data/predictive_data.csv
 
-# Byte-compiled
+# Track empty models folder
+models/*
+!models/.gitkeep
+
+# Python cache
 __pycache__/
 *.py[cod]
+*.pyo
+
+# Virtual envs
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
