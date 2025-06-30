@@ -2,42 +2,43 @@ import streamlit as st
 import pandas as pd
 import os
 from utils.utils import load_data
+from utils.model import train_model, predict, load_model, MODEL_PATH
 
 st.set_page_config(page_title='Predictive Maintenance Dashboard', layout='wide')
+st.title("Predictive Maintenance Dashboard")
 
-st.title("Predictive Maintenance Dashboard – Overview")
-
-# Data upload or default
-uploaded = st.file_uploader(
-    "Upload sensor data CSV (timestamp,sensor_1,...,failure)",
-    type=['csv']
-)
-if uploaded is not None:
-    try:
-        data = pd.read_csv(uploaded, parse_dates=['timestamp'])
-        st.success("Loaded uploaded data")
-    except Exception as e:
-        st.error(f"Error reading uploaded file: {e}")
-        st.stop()
+# Load data
+uploaded = st.file_uploader("Upload sensor CSV", type=['csv'])
+if uploaded:
+    data = pd.read_csv(uploaded, parse_dates=['timestamp'])
+    st.success("Loaded uploaded data")
 else:
     try:
         data = load_data()
-        st.info("Loaded default data from data/predictive_data.csv")
     except FileNotFoundError as e:
         st.error(str(e))
         st.stop()
 
-# Preview and metrics
-st.subheader("Sensor Data Preview")
+# Data preview
+st.subheader("Data Preview")
 st.dataframe(data.head(), use_container_width=True)
 
-st.subheader("Basic Metrics")
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Records", len(data))
-col2.metric("Time Range", f"{data['timestamp'].min()} to {data['timestamp'].max()}")
-col3.metric("Failure Count", int(data['failure'].sum()))
+# Sidebar: train or load model
+st.sidebar.header("Model")
+if st.sidebar.button("Train RandomForest Model"):
+    clf, report = train_model(data)
+    st.sidebar.success("Model trained and saved")
+    st.sidebar.json(report)
+elif st.sidebar.button("Load Model"):
+    try:
+        clf = load_model()
+        st.sidebar.success("Model loaded")
+    except FileNotFoundError as e:
+        st.sidebar.error(str(e))
+        st.stop()
 
-# Time series charts
-st.subheader("Sensor Readings Over Time")
-for sensor in [c for c in data.columns if c.startswith('sensor_')]:
-    st.line_chart(data.set_index('timestamp')[sensor])
+# If model exists, show predictions
+if os.path.exists(os.path.join('models','rf_model.joblib')):
+    st.subheader("Predictions")
+    results = predict(data)
+    st.dataframe(results[['timestamp','sensor_1','sensor_2','sensor_3','predicted_failure','failure_prob']].head(), use_container_width=True)

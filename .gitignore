@@ -1,21 +1,6 @@
-# Ignore everything in data except the CSV
 data/*
 !data/predictive_data.csv
-
-# Track empty models folder
 models/*
-!models/.gitkeep
-
-# Python cache
+!models/rf_model.joblib
 __pycache__/
 *.py[cod]
-*.pyo
-
-# Virtual envs
-.venv/
-env/
-.env
-
-# IDE
-.vscode/
-.idea/
